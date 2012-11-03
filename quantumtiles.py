@@ -1,36 +1,28 @@
 # -*- coding: utf-8 -*-
 
 import os
-import tempfile
 import resources
 from qgis.gui import *
 from qgis.core import *
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
-import mapnik
-
 class Quantumtiles(QObject):
     def __init__(self, iface):
+        QObject.__init__(self)
         self.iface = iface
+        self.canvas = iface.mapCanvas()
 
     def initGui(self):
-        # create action that will start plugin configuration
-        self.action = QAction(QIcon(":/mapPuzzle.png"), "QuantumTiles", self.iface.mainWindow())
-        self.action.setWhatsThis("Generate Tiles with Qgis")
-        self.action.setStatusTip("Generate Tiles")
-        QObject.connect(self.action, SIGNAL("triggered()"), self.run)
-
-        # add toolbar button and menu item
-        self.iface.addToolBarIcon(self.action)
-        self.iface.addPluginToMenu("&QuantumTiles", self.action)
-
+        self.mainAction = QAction(QIcon(":/mapPuzzle.png"),"Tile Generator", self.iface.mainWindow())
+        self.mainAction.setWhatsThis("Tile Generator")
+        QObject.connect(self.mainAction, SIGNAL("triggered()"), self.mainActionRun)
+        self.iface.addToolBarIcon(self.mainAction)
+        self.iface.addPluginToMenu("Generate Tiles", self.mainAction)
+        
     def unload(self):
-        # remove the plugin menu item and icon
-        self.iface.removePluginMenu("&QuantumTiles",self.action)
-        self.iface.removeToolBarIcon(self.action)
+        self.iface.removePluginMenu("Quantumtiles", self.mainAction)
 
-
-    def run(self):
-        # create and show a configuration dialog or something similar
-        print "TestPlugin: run called!"
+    def mainActionRun(self):
+        info = QString("Generate tiles with qgis.\nWritten by Mykolas Simutis\nhttps://github.com/mykk/quantumTiles")
+        QMessageBox.information(self.iface.mainWindow(),"About", info)    
