@@ -1,0 +1,25 @@
+; the next section is mandatory
+[general]
+name=QuantumTiles
+qgisMinimumVersion=1.0
+description=Generate tiles with help of mapnik
+category=Raster
+version=version 0.1
+; end of mandatory metadata
+
+; start of optional metadata
+changelog=Initial version.
+; tags are in comma separated value format, spaces are allowed
+tags=raster,tiles
+
+; these metadata can be empty
+; in a future version of the web application it will
+; be probably possible to create a project on redmine
+; if they are not filled
+homepage=https://github.com/mykk/quantumTiles
+tracker=https://github.com/mykk/quantumTiles
+repository=https://github.com/mykk/quantumTiles
+icon=mapPuzzle.png
+
+; deprecated flag (applies to the whole plugin and not only to the uploaded version)
+deprecated=False
