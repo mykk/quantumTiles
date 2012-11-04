@@ -7,6 +7,8 @@ from qgis.core import *
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
+from TileGeneratorUI import TileGeneratorUI
+
 class Quantumtiles(QObject):
     def __init__(self, iface):
         QObject.__init__(self)
@@ -24,5 +26,6 @@ class Quantumtiles(QObject):
         self.iface.removePluginMenu("Quantumtiles", self.mainAction)
 
     def mainActionRun(self):
-        info = QString("Generate tiles with qgis.\nWritten by Mykolas Simutis\nhttps://github.com/mykk/quantumTiles")
-        QMessageBox.information(self.iface.mainWindow(),"About", info)    
+        flags = Qt.WindowTitleHint | Qt.WindowSystemMenuHint | Qt.WindowStaysOnTopHint
+        dlg = TileGeneratorUI(self, flags)
+        dlg.show()
