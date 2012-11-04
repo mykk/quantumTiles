@@ -11,10 +11,18 @@ class TileGeneratorUI(QDialog, Ui_TileGenerator_UI):
         # Set up the user interface from Designer. 
         self.parent = parent
         self.setupUi(self)
+        
+        doubleValidator = QDoubleValidator()
+        doubleValidator.setBottom(0.0001)
+        self.units_pixel.setValidator(doubleValidator)
+        
+        intValidator = QIntValidator(1, 100)
+        self.thread_count.setValidator(intValidator)
+        
         QObject.connect(self.output_browse, SIGNAL("clicked()"), self.setOutputDir)
         QObject.connect(self.xml_browse, SIGNAL("clicked()"), self.setXmlFile)
         QObject.connect(self.border_browse, SIGNAL("clicked()"), self.setBorderFile)
-        self.outputDir = ""
+        QObject.connect(self.border_browse, SIGNAL("clicked()"), self.setBorderFile)
         
     def setOutputDir(self):
         dlg = QFileDialog(self)
@@ -38,3 +46,15 @@ class TileGeneratorUI(QDialog, Ui_TileGenerator_UI):
         
     def setBorderFile(self):
         self.border_file.setText(self.getSingleFile("*.shp"))
+        
+    def accept(self):
+        print "accepted"
+        
+        
+        
+        
+        
+        
+        
+        
+        
