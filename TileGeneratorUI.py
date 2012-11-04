@@ -20,10 +20,21 @@ class TileGeneratorUI(QDialog, Ui_TileGenerator_UI):
         dlg = QFileDialog(self)
         dlg.setFileMode(QFileDialog.Directory)
         dlg.open()
-        self.outputDir = dlg.directory().absolutePath()
+        self.output_path.setText(dlg.directory().absolutePath())
 
+    def getSingleFile(self, nameFilter):
+        dlg = QFileDialog(self)
+        dlg.setNameFilter(nameFilter)
+        dlg.setFileMode(QFileDialog.ExistingFile)
+        dlg.open()
+
+        if dlg.selectedFiles().isEmpty():
+            return ''
+        else:
+            return dlg.selectedFiles()[0]
+            
     def setXmlFile(self):
-        i = 1
+        self.xml_file.setText(self.getSingleFile("*.xml"))
         
     def setBorderFile(self):
-        x = 1
+        self.border_file.setText(self.getSingleFile("*.shp"))
