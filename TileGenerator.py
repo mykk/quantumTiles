@@ -47,10 +47,11 @@ def worldMap(destination, i, j, scale, xMinimum, yMaximum):
     
     
 def mapPrintThread(threadNo, scale, destination, xmlfile, borderFilePath):
-    additional = int(512*scale)
-    w,h = int(5120*2 + additional*2/scale), int(5120*2+ additional*2/scale)
+    imgSize = 512
+    additional = imgSize/scale
+    w,h = int(imgSize * 10 + additional*2/scale), int(imgSize * 10 + additional*2/scale)
     
-    m = mapnik.Map(w,h)
+    m = mapnik.Map(imgSize, imgSize)
     mapnik.load_map(m, xmlfile)
     
     ds = ogr.Open(borderFilePath)
@@ -83,7 +84,7 @@ def mapPrintThread(threadNo, scale, destination, xmlfile, borderFilePath):
                     
                 if intersects:  
                     m.zoom_to_box(bbox)
-                    im = mapnik.Image(w, h)      
+                    im = mapnik.Image(imgSize, imgSize)      
                     mapnik.render(m, im)
                     fileName = destination + str(scale) +'m_' + str(i) + '_' + str(j)
                     im.save(fileName + ".png", 'png256')
