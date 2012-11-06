@@ -47,15 +47,14 @@ def worldMap(destination, i, j, scale, xMinimum, yMaximum):
     
     
 def mapPrintThread(threadNo, scale, destination, xmlfile, borderFilePath):
-    additional = 2560*scale
-
-    w,h = 5120*2 + additional*2/scale, 5120*2+ additional*2/scale
-
+    additional = int(512*scale)
+    w,h = int(5120*2 + additional*2/scale), int(5120*2+ additional*2/scale)
+    
     m = mapnik.Map(w,h)
     mapnik.load_map(m, xmlfile)
-
-    ds = ogr.Open(borderFile)
-    borderLayer = ds.GetLayer(borderFilePath)
+    
+    ds = ogr.Open(borderFilePath)
+    borderLayer = ds.GetLayer()
     xStart, xEnd, yStart, yEnd = borderLayer.GetExtent()
 
     xStart -= additional
@@ -90,7 +89,7 @@ def mapPrintThread(threadNo, scale, destination, xmlfile, borderFilePath):
                     im.save(fileName + ".png", 'png256')
                     im = None
                     worldMapFile = worldMap(destination, i, j, scale, bbox.minx, bbox.maxy)
-                    png2tiff(fileName, scale, additional, w, h)
+                    #png2tiff(fileName, scale, additional, w, h)
                 currentMinX = bbox.maxx - additional*2
                 bbox = mapnik.Box2d(currentMinX, bbox.miny, currentMinX + xDiff, bbox.maxy)
                 i += 1
@@ -98,8 +97,7 @@ def mapPrintThread(threadNo, scale, destination, xmlfile, borderFilePath):
         currentMinX = xStart
         bbox = mapnik.Box2d(xStart, currentMinY, xStart + xDiff, currentMinY + yDiff)
         j += 1
-        
-        
+
 def printMap(threadCount, destination, scale, xmlfile, borderFilePath):
     for i in range(1, threadCount+1):
         args = i, scale, destination, xmlfile, borderFilePath
