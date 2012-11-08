@@ -47,11 +47,11 @@ def worldMap(destination, i, j, scale, xMinimum, yMaximum):
     
     
 def mapPrintThread(threadNo, scale, destination, xmlfile, borderFilePath):
-    imgSize = 512
+    imgSize = 1024*5
     additional = imgSize/scale
-    w,h = int(imgSize * 10 + additional*2/scale), int(imgSize * 10 + additional*2/scale)
+    w,h = int(imgSize + additional*2/scale), int(imgSize + additional*2/scale)
     
-    m = mapnik.Map(imgSize, imgSize)
+    m = mapnik.Map(imgSize/5, imgSize/5)
     mapnik.load_map(m, xmlfile)
     
     ds = ogr.Open(borderFilePath)
@@ -84,7 +84,7 @@ def mapPrintThread(threadNo, scale, destination, xmlfile, borderFilePath):
                     
                 if intersects:  
                     m.zoom_to_box(bbox)
-                    im = mapnik.Image(imgSize, imgSize)      
+                    im = mapnik.Image(imgSize/5, imgSize/5)      
                     mapnik.render(m, im)
                     fileName = destination + str(scale) +'m_' + str(i) + '_' + str(j)
                     im.save(fileName + ".png", 'png256')
@@ -99,6 +99,7 @@ def mapPrintThread(threadNo, scale, destination, xmlfile, borderFilePath):
         bbox = mapnik.Box2d(xStart, currentMinY, xStart + xDiff, currentMinY + yDiff)
         j += 1
 
+#printMap(1, '/home/mykolas/tmp/', 64, '/home/mykolas/Desktop/Tiles/mapnik/mapnik64meters.xml', '/home/mykolas/Desktop/Tiles/ribos.shp')
 def printMap(threadCount, destination, scale, xmlfile, borderFilePath):
     for i in range(1, threadCount+1):
         args = i, scale, destination, xmlfile, borderFilePath
