@@ -10,7 +10,7 @@ import mapnik
 from gdalconst import *
     
 def resizePNG(sourceName, cutOffPixels, w, h):
-    os.system('gdal_translate -of png -outsize 20% 20% -srcwin ' + str(cutOffPixels) + ' ' + str(cutOffPixels) + ' ' + str(w) + ' ' +  str(h) + ' '+
+    os.system('gdal_translate -of png -srcwin ' + str(cutOffPixels) + ' ' + str(cutOffPixels) + ' ' + str(w) + ' ' +  str(h) + ' '+
         sourceName +'.png ' + sourceName +'_resized.png')
     return sourceName +'_resized.png'
     
@@ -25,11 +25,11 @@ def png2tiff(sourceName, metersPerPixel, additional, w, h):
     png_driver = gdal.GetDriverByName('PNG')
     dataset = gdal.Open(resizedPng, GA_ReadOnly)
     gtiffDriver = gdal.GetDriverByName("GTiff")
-    newFile = gtiffDriver.CreateCopy(sourceName + '.tif', dataset, 0, ["TILED=YES", "-b 1", "BLOCKXSIZE=512", "BLOCKYSIZE=512", "COMPRESS=LZW"])
-    newFile = None
+    #newFile = gtiffDriver.CreateCopy(sourceName + '.tif', dataset, 0, ["TILED=YES", "-b 1", "BLOCKXSIZE=512", "BLOCKYSIZE=512", "COMPRESS=LZW"])
+    #newFile = None
     dataset = None
     png_driver.Delete(sourceName + '.png')
-    png_driver.Delete(resizedPng)
+    #png_driver.Delete(resizedPng)
 
 
 
@@ -46,12 +46,12 @@ def worldMap(destination, i, j, scale, xMinimum, yMaximum):
     return fileName
     
     
-def mapPrintThread(threadNo, scale, destination, xmlfile, borderFilePath):
-    imgSize = 1024*5
-    additional = imgSize/scale
+def mapPrintThread(threadNo, threadCount, scale, destination, xmlfile, borderFilePath):               
+    imgSize = 1024
+    additional = 0#int(imgSize/5*scale)
     w,h = int(imgSize + additional*2/scale), int(imgSize + additional*2/scale)
     
-    m = mapnik.Map(imgSize/5, imgSize/5)
+    m = mapnik.Map(imgSize, imgSize)
     mapnik.load_map(m, xmlfile)
     
     ds = ogr.Open(borderFilePath)
@@ -72,25 +72,21 @@ def mapPrintThread(threadNo, scale, destination, xmlfile, borderFilePath):
     j = 0
     k = 0
     while (currentMinY <= yEnd):
-        i = 0
-        k += 1
-        
+        i = 0        
+        k = (k + 1) % threadCount
         if k == threadNo:
             while (currentMinX <= xEnd):
-                intersects = 0
                 borderLayer.SetSpatialFilterRect(bbox.minx, bbox.miny, bbox.maxx, bbox.maxy)
                 if borderLayer.GetFeatureCount() > 0:
-                    intersects = 1
-                    
-                if intersects:  
                     m.zoom_to_box(bbox)
-                    im = mapnik.Image(imgSize/5, imgSize/5)      
+                    im = mapnik.Image(w, h)      
                     mapnik.render(m, im)
                     fileName = destination + str(scale) +'m_' + str(i) + '_' + str(j)
                     im.save(fileName + ".png", 'png256')
                     im = None
                     worldMapFile = worldMap(destination, i, j, scale, bbox.minx, bbox.maxy)
                     #png2tiff(fileName, scale, additional, w, h)
+                    
                 currentMinX = bbox.maxx - additional*2
                 bbox = mapnik.Box2d(currentMinX, bbox.miny, currentMinX + xDiff, bbox.maxy)
                 i += 1
@@ -101,8 +97,8 @@ def mapPrintThread(threadNo, scale, destination, xmlfile, borderFilePath):
 
 #printMap(1, '/home/mykolas/tmp/', 64, '/home/mykolas/Desktop/Tiles/mapnik/mapnik64meters.xml', '/home/mykolas/Desktop/Tiles/ribos.shp')
 def printMap(threadCount, destination, scale, xmlfile, borderFilePath):
-    for i in range(1, threadCount+1):
-        args = i, scale, destination, xmlfile, borderFilePath
+    for i in range(0, threadCount):
+        args = i, threadCount, scale, destination, xmlfile, borderFilePath
         thread.start_new_thread(mapPrintThread, args)
       
 
