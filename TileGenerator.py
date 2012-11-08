@@ -10,13 +10,11 @@ import mapnik
 from gdalconst import *
     
 def resizePNG(sourceName, cutOffPixels, w, h):
-    os.system('gdal_translate -of png -srcwin ' + str(cutOffPixels) + ' ' + str(cutOffPixels) + ' ' + str(w) + ' ' +  str(h) + ' '+
-        sourceName +'.png ' + sourceName +'_resized.png')
+    os.system('gdal_translate -of png -srcwin ' + str(cutOffPixels) + ' ' + str(cutOffPixels) + ' ' + str(w) + ' ' +  str(h) + ' '+ sourceName +'.png ' + sourceName +'_resized.png') 
     return sourceName +'_resized.png'
-    
 
-def png2tiff(sourceName, metersPerPixel, additional, w, h):
-    cutOffPixels = additional / metersPerPixel
+def png2tiff(sourceName, oldScale, metersPerPixel, additional, w, h):
+    cutOffPixels = additional / oldScale
     wNew = w - cutOffPixels*2
     hNew = h - cutOffPixels*2
     resizedPng = resizePNG(sourceName, cutOffPixels, wNew, hNew)
@@ -25,11 +23,11 @@ def png2tiff(sourceName, metersPerPixel, additional, w, h):
     png_driver = gdal.GetDriverByName('PNG')
     dataset = gdal.Open(resizedPng, GA_ReadOnly)
     gtiffDriver = gdal.GetDriverByName("GTiff")
-    #newFile = gtiffDriver.CreateCopy(sourceName + '.tif', dataset, 0, ["TILED=YES", "-b 1", "BLOCKXSIZE=512", "BLOCKYSIZE=512", "COMPRESS=LZW"])
-    #newFile = None
+    newFile = gtiffDriver.CreateCopy(sourceName + '.tif', dataset, 0, ["TILED=YES", "-b 1", "BLOCKXSIZE=512", "BLOCKYSIZE=512", "COMPRESS=LZW"])
+    newFile = None
     dataset = None
     png_driver.Delete(sourceName + '.png')
-    #png_driver.Delete(resizedPng)
+    png_driver.Delete(resizedPng)
 
 
 
@@ -48,10 +46,11 @@ def worldMap(destination, i, j, scale, xMinimum, yMaximum):
     
 def mapPrintThread(threadNo, threadCount, scale, destination, xmlfile, borderFilePath):               
     imgSize = 1024
-    additional = 0#int(imgSize/5*scale)
-    w,h = int(imgSize + additional*2/scale), int(imgSize + additional*2/scale)
+    newScale = scale*5
+    additional = (imgSize/(2))*newScale
+    w,h = int(imgSize + (additional*2)/newScale), int(imgSize + (additional*2)/newScale)
     
-    m = mapnik.Map(imgSize, imgSize)
+    m = mapnik.Map(w, h)
     mapnik.load_map(m, xmlfile)
     
     ds = ogr.Open(borderFilePath)
@@ -61,8 +60,8 @@ def mapPrintThread(threadNo, threadCount, scale, destination, xmlfile, borderFil
     xStart -= additional
     yStart -= additional
 
-    xDiff = w * scale
-    yDiff = h * scale
+    xDiff = w * newScale
+    yDiff = h * newScale
 
     bbox = mapnik.Box2d(xStart, yStart, xStart + xDiff, yStart + yDiff)
 
@@ -81,11 +80,11 @@ def mapPrintThread(threadNo, threadCount, scale, destination, xmlfile, borderFil
                     m.zoom_to_box(bbox)
                     im = mapnik.Image(w, h)      
                     mapnik.render(m, im)
-                    fileName = destination + str(scale) +'m_' + str(i) + '_' + str(j)
+                    fileName = destination + str(newScale) +'m_' + str(i) + '_' + str(j)
                     im.save(fileName + ".png", 'png256')
                     im = None
-                    worldMapFile = worldMap(destination, i, j, scale, bbox.minx, bbox.maxy)
-                    #png2tiff(fileName, scale, additional, w, h)
+                    worldMapFile = worldMap(destination, i, j, newScale, bbox.minx, bbox.maxy)
+                    #png2tiff(fileName, scale, newScale, additional, w, h)
                     
                 currentMinX = bbox.maxx - additional*2
                 bbox = mapnik.Box2d(currentMinX, bbox.miny, currentMinX + xDiff, bbox.maxy)
